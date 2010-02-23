@@ -1,0 +1,193 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import with_statement
+
+import errno
+import os.path
+import sys
+
+import gtk
+
+import evdaemon.bustype
+import evdaemon.config
+import evdaemon.inputbus
+import evdaemon.key
+import evdaemon.rel
+
+_MODULE_DIRPATH = os.path.dirname(__file__)
+_BUILDER_XML_FILEPATH = os.path.join(_MODULE_DIRPATH, "evdaemon-admin-gtk.xml")
+
+class EvdaemonAdmin(object):
+
+    def open(self):
+        self.window.set_focus(None)
+        for device in ("filter", "monitor", "clone"):
+            entry_name = "entry_" + device + "_name"
+            entry = self.builder.get_object(entry_name)
+            entry.set_text(evdaemon.config.read_name(device))
+
+        adjustment_filter_duration = self.builder.get_object(
+            "adjustment_filter_duration")
+        adjustment_filter_duration.set_value(
+            evdaemon.config.read_filter_duration())
+
+        combobox_clone_bustype = self.builder.get_object(
+            "combobox_clone_bustype")
+        liststore_clone_bustype = combobox_clone_bustype.get_model()
+        clone_bustype = evdaemon.config.read_clone_id("bustype")
+        for row in liststore_clone_bustype:
+            if row[1] == clone_bustype:
+                combobox_clone_bustype.set_active_iter(row.iter)
+
+        for id_name in ("vendor", "product", "version"):
+            adjustment_name = "adjustment_clone_" + id_name
+            adjustment = self.builder.get_object(adjustment_name)
+            adjustment.set_value(evdaemon.config.read_clone_id(id_name))
+
+        for device in ("filter", "monitor"):
+            for capability, bit_count in (("key", evdaemon.key.CNT),
+                                          ("rel", evdaemon.rel.CNT)):
+                treeview_name = "treeview_" + device + "_" + capability + "s"
+                treeview = self.builder.get_object(treeview_name)
+                liststore = treeview.get_model()
+                value = evdaemon.config.read_capability_bits(device,
+                                                             capability,
+                                                             bit_count)
+                for row in liststore:
+                    if (1 << row[2]) & value:
+                        row[1] = True
+
+        statusbar = self.builder.get_object("statusbar")
+        open_context_id = statusbar.get_context_id("open")
+        statusbar.push(open_context_id, "Configuration opened.")
+
+    def save(self):
+        self.window.set_focus(None)
+        for device in ("filter", "monitor", "clone"):
+            entry_name = "entry_" + device + "_name"
+            entry = self.builder.get_object(entry_name)
+            evdaemon.config.write_name(entry.get_text(), device)
+
+        adjustment_filter_duration = self.builder.get_object(
+            "adjustment_filter_duration")
+        evdaemon.config.write_filter_duration(
+            adjustment_filter_duration.get_value())
+
+        combobox_clone_bustype = self.builder.get_object(
+            "combobox_clone_bustype")
+        active_index = combobox_clone_bustype.get_active()
+        liststore_clone_bustype = combobox_clone_bustype.get_model()
+        bustype_value = liststore_clone_bustype[active_index][1]
+        evdaemon.config.write_clone_id(bustype_value, "bustype")
+
+        for id_name in ("vendor", "product", "version"):
+            adjustment_name = "adjustment_clone_" + id_name
+            adjustment = self.builder.get_object(adjustment_name)
+            evdaemon.config.write_clone_id(adjustment.get_value(), id_name)
+
+        for device in ("filter", "monitor"):
+            for capability, bit_count in (("key", evdaemon.key.CNT),
+                                          ("rel", evdaemon.rel.CNT)):
+                treeview_name = "treeview_" + device + "_" + capability + "s"
+                treeview = self.builder.get_object(treeview_name)
+                liststore = treeview.get_model()
+                value = sum([1 << row[2] for row in liststore if row[1]])
+                evdaemon.config.write_capability_bits(value, device, capability)
+
+        statusbar = self.builder.get_object("statusbar")
+        save_context_id = statusbar.get_context_id("save")
+        statusbar.push(save_context_id, "Configuration saved.")
+
+    def quit(self):
+        gtk.main_quit()
+
+    def on_imagemenuitem_open_activate(self, widget):
+        self.open()
+
+    def on_action_save_activate(self, widget):
+        self.save()
+
+    def on_imagemenuitem_quit_activate(self, widget):
+        self.quit()
+
+    def on_window_destroy(self, widget):
+        self.quit()
+
+    def event_value_toggled(self, widget, path, model):
+        model[path][1] = not model[path][1]
+
+    def name_changed(self, entry):
+        pass
+
+    def __init__(self):
+        self.builder = gtk.Builder()
+        self.builder.add_from_file(_BUILDER_XML_FILEPATH)
+
+        self.window = self.builder.get_object("window")
+
+        for event_name in ("filter_keys", "filter_rels",
+                           "monitor_keys", "monitor_rels"):
+            treeview_name = "treeview_" + event_name
+            treeview = self.builder.get_object(treeview_name)
+            liststore = gtk.ListStore(str, bool, int)
+            treeview.set_model(liststore)
+            col_event_name_renderer = gtk.CellRendererText()
+            col_event_value_renderer = gtk.CellRendererToggle()
+
+            col_event_value_renderer.set_property("activatable", True)
+            col_event_value_renderer.connect("toggled",
+                                             self.event_value_toggled,
+                                             liststore)
+
+            col_event_name = gtk.TreeViewColumn("Name",
+                                                col_event_name_renderer,
+                                                text=0)
+            col_event_value = gtk.TreeViewColumn("Value",
+                                                 col_event_value_renderer,
+                                                 active=1)
+
+            treeview.append_column(col_event_name)
+            treeview.append_column(col_event_value)
+
+        for treeview_name in ("treeview_filter_keys", "treeview_monitor_keys"):
+            liststore = self.builder.get_object(treeview_name).get_model()
+            for i, key_name in enumerate(evdaemon.key.NAMES):
+                if key_name != '':
+                    liststore.append([key_name, False, i])
+
+        for treeview_name in ("treeview_filter_rels", "treeview_monitor_rels"):
+            liststore = self.builder.get_object(treeview_name).get_model()
+            for i, rel_name in enumerate(evdaemon.rel.NAMES):
+                if rel_name != '':
+                    liststore.append([rel_name, False, i])
+
+        combobox_clone_bustype = self.builder.get_object("combobox_clone_bustype")
+        liststore_clone_bustype = gtk.ListStore(str, int)
+        combobox_clone_bustype.set_model(liststore_clone_bustype)
+        cell = gtk.CellRendererText()
+        combobox_clone_bustype.pack_start(cell, True)
+        combobox_clone_bustype.add_attribute(cell, "text", 0)
+        for i, bustype_name in enumerate(evdaemon.bustype.NAMES):
+            if bustype_name != '':
+                liststore_clone_bustype.append([bustype_name, i])
+        combobox_clone_bustype.set_active(0)
+
+        for entry_name in ("entry_monitor_name", "entry_filter_name"):
+            entry = self.builder.get_object(entry_name)
+            entry.connect("changed", self.name_changed)
+
+        self.window.maximize()
+        self.builder.connect_signals(self)
+
+def main(argv):
+    evdaemon_admin = EvdaemonAdmin()
+    evdaemon_admin.open()
+    evdaemon_admin.window.show()
+    gtk.main()
+
+if __name__ == "__main__":
+    main(sys.argv)
