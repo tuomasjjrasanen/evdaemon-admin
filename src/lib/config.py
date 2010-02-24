@@ -1,12 +1,23 @@
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import with_statement
+from __future__ import division
+
 import os.path
+import subprocess
 
 import evdaemon.key
 import evdaemon.utils
 
-# DIRPATH = "/home/tuos/devel/evdaemon/etc/evdaemon"
-# DIRPATH = "/etc/evdaemon"
-DIRPATH = "/usr/local/etc/evdaemon"
+def _query_config_dir():
+    p = subprocess.Popen(["evdaemon", "--config-dir"], stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    dirpath, errmsg = p.communicate()
+    if errmsg:
+        raise RuntimeError(errmsg.strip())
+    return dirpath.strip()
 
+DIRPATH = _query_config_dir()
 FILTER_DURATION_FILEPATH = os.path.join(DIRPATH, "filter", "duration")
 
 def write_line(line, path):
