@@ -1,5 +1,7 @@
-CNTS = {
-    "key": 0x300,
-    "rel": 0x10,
-}
+import evdaemon.key
+import evdaemon.rel
 
+NAMES = {
+    "key": evdaemon.key.NAMES,
+    "rel": evdaemon.rel.NAMES,
+}
