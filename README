@@ -28,6 +28,7 @@ Runtime requirements
 Downloading
 ===========
 
+- Ubuntu package: https://launchpad.net/~tuos/+archive/codegrove
 - Tarball is available at: http://codegrove.org/evdaemon-admin/releases/evdaemon-admin-0.1.tar.gz
 - Tarballs of every release at: http://codegrove.org/evdaemon-admin/releases/
 - Latest sources from public git-repository: http://github.com/tuos/evdaemon-admin/ ::

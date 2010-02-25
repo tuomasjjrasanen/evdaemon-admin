@@ -294,6 +294,7 @@ class EvdaemonAdmin(object):
         self.builder.add_from_file(_BUILDER_XML_FILEPATH)
 
         self.window = self.builder.get_object("window")
+        self.window.set_icon_from_file("/usr/share/pixmaps/evdaemon-admin.xpm")
 
         self.devices = evdaemon.inputbus.devices()
 
