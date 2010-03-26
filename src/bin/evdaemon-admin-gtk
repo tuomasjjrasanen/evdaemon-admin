@@ -176,7 +176,9 @@ class EvdaemonAdmin(object):
         model[path][1] = not model[path][1]
 
     def device_changed(self, combobox, device_role):
-        device = self.devices[combobox.get_active_text()]
+        for device in self.devices:
+            if device["name"] == combobox.get_active_text():
+                break
 
         for capability, event_names in evdaemon.capabilities.NAMES.items():
             treeview_name = "treeview_%s_%s" % (device_role, capability)
@@ -296,7 +298,7 @@ class EvdaemonAdmin(object):
         self.window = self.builder.get_object("window")
         self.window.set_icon_from_file("/usr/share/pixmaps/evdaemon-admin.xpm")
 
-        self.devices = evdaemon.inputbus.devices()
+        self.devices = tuple(evdaemon.inputbus.devices())
 
         for device_role in ("filter", "monitor"):
             for capability, event_names in evdaemon.capabilities.NAMES.items():
@@ -342,10 +344,10 @@ class EvdaemonAdmin(object):
             cell = gtk.CellRendererText()
             combobox.pack_start(cell, True)
             combobox.add_attribute(cell, "text", 0)
-            for name, device in self.devices.items():
+            for device in self.devices:
                 capabilities = set(device["capabilities"].keys())
                 if set(evdaemon.capabilities.NAMES.keys()) & set(capabilities):
-                    liststore.append([name])
+                    liststore.append([device["name"]])
             combobox.connect("changed", self.device_changed, device_role)
             combobox.set_active(0)
 

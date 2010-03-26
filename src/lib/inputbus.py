@@ -20,13 +20,12 @@ _CAPABILITY_PATTERN = re.compile(r"^B: (?P<capability>[A-Z]+)=(?P<value>.*)$")
 _BLOCK_END_PATTERN = re.compile(r"^$")
 
 def device(attr_name, attr_value, device_list_filepath=_DEVLIST_FILEPATH):
-    for device in devices(device_list_filepath).values():
-        if device[attr_name] == value:
+    for device in devices(device_list_filepath):
+        if device[attr_name] == attr_value:
             yield device
 
 def devices(device_list_filepath=_DEVLIST_FILEPATH):
     with open(device_list_filepath) as devfile:
-        result = {}
         for line in devfile:
             device = {
                 "bus": None,
@@ -62,5 +61,4 @@ def devices(device_list_filepath=_DEVLIST_FILEPATH):
                 capability = capability_dict["capability"].lower()
                 value = evdaemon.utils.hexline_to_int(capability_dict["value"])
                 device["capabilities"][capability] = value
-            result[device["name"]] = device
-    return result
+            yield device
