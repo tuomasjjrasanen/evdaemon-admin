@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name="evdaemon-admin",
-      version="0.1",
+      version="0.1.1",
       description="Tools for evdaemon administration.",
       long_description="Tools for evdaemon administration.",
       author="Tuomas Räsänen",
