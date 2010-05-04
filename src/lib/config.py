@@ -65,7 +65,7 @@ def read_clone_id(id_name):
 
 def read_capability_bits(device_role, capability):
     path = os.path.join(DIRPATH, device_role, "capabilities", capability)
-    return evdaemon.utils.hexline_to_int(read_line(path))
+    return evdaemon.utils.hexline_to_int(read_line(path), 16)
 
 def read_name(device_role):
     path = os.path.join(DIRPATH, device_role, "name")

@@ -1,14 +1,17 @@
-def hexstrs_to_int(hexstrs):
+import sys
+
+MAX_HEXLEN = len(hex(sys.maxint)[2:])
+
+def hexstrs_to_int(hexstrs, max_hexlen=MAX_HEXLEN):
     hexsumstr = ''
     hexvals = [int(v, 16) for v in hexstrs]
     for hexval in hexvals:
-        padded_hexval = format(hexval, "016x")
-        assert(len(padded_hexval) == 16)
+        padded_hexval = format(hexval, "0%dx" % max_hexlen)
         hexsumstr += padded_hexval
     return int(hexsumstr, 16)
 
-def hexline_to_int(hexline):
-    return hexstrs_to_int(hexline.split())
+def hexline_to_int(hexline, max_hexlen=MAX_HEXLEN):
+    return hexstrs_to_int(hexline.split(), max_hexlen)
 
 def int_to_hexline(value):
     hexstr = format(value, "x")
