@@ -1,7 +1,5 @@
 from __future__ import absolute_import
-from __future__ import print_function
 from __future__ import with_statement
-from __future__ import division
 
 import re
 
@@ -44,7 +42,6 @@ def devices(device_list_filepath=_DEVLIST_FILEPATH):
             try:
                 device.update(_ID_PATTERN.match(line).groupdict())
             except AttributeError, e:
-                print(repr(line))
                 raise e
             device.update(_NAME_PATTERN.match(devfile.next()).groupdict())
             device.update(_PHYS_PATTERN.match(devfile.next()).groupdict())
