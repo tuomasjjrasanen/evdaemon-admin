@@ -3,3 +3,5 @@
 build
 MANIFEST
 index.html
+dist
+evdaemon-admin-*.tar.gz
