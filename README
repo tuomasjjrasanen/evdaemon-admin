@@ -16,20 +16,20 @@ General information
 - **Author**: Tuomas Räsänen (tuos) <tuos@codegrove.org>
 - **Homepage**: http://codegrove.org/evdaemon-admin/
 - **License**: GPLv3+ (see COPYING for details)
-- **Version**: 0.1.1
+- **Version**: 0.1.2
 
 Runtime requirements
 ====================
 
-- Evdaemon 0.3.x
-- Python 2.6.x
+- Evdaemon 0.3.2+
+- Python 2.5.x+
 - PyGTK
 
 Downloading
 ===========
 
 - Ubuntu package: https://launchpad.net/~tuos/+archive/codegrove
-- Tarball is available at: http://codegrove.org/evdaemon-admin/releases/evdaemon-admin-0.1.1.tar.gz
+- Tarball is available at: http://codegrove.org/evdaemon-admin/releases/evdaemon-admin-0.1.2.tar.gz
 - Tarballs of every release at: http://codegrove.org/evdaemon-admin/releases/
 - Latest sources from public git-repository: http://github.com/tuos/evdaemon-admin/ ::
 
