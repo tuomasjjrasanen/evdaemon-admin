@@ -1,0 +1,15 @@
+evdaemon-admin (0.1.1-0ubuntu1) lucid; urgency=low
+
+  * Upstream bug fix release:
+	- Interpret /proc/bus/input/devices correctly also in non-64bit systems.
+  * Lucidify.
+
+ -- Tuomas Räsänen (tuos) <tuos@codegrove.org>  Wed, 05 May 2010 00:16:08 +0300
+
+evdaemon-admin (0.1-0ubuntu1) karmic; urgency=low
+
+  * Initial release.
+    - share/applications/evdaemon-admin.desktop: exec with gksudo
+    - src/lib/__init__.py: provide commands for controlling evdaemon Upstart job
+
+ -- Tuomas Räsänen (tuos) <tuos@codegrove.org>  Thu, 25 Feb 2010 14:44:19 +0200

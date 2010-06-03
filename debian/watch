@@ -1,0 +1,3 @@
+version=3
+
+http://codegrove.org/evdaemon-admin/releases/evdaemon-admin-(\d.*).tar.gz debian uupdate
